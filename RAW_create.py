@@ -9,9 +9,10 @@ from array import array
 import re
 import sys
 import matplotlib.pyplot as plt
+import pickle
 
 
-def crete_raw(filename, voxel_size, layers):
+def crete_raw(filename, voxel_size, layers, fill_model=True, progress=False, restore_voxels=False):
     def get_model_border():
         """Возвращает максимумы и минимумы по осям, и массив треугольников"""
         triangles_array = []
@@ -116,12 +117,20 @@ def crete_raw(filename, voxel_size, layers):
     def insertions():
         """Выберает воксели, которые появляются на пересечении триангулированной поверхности и сетки"""
         not_empty_voxels = []
+        old_cur = -1
         for center in all_centers:
             for triangle in triangle_array:
 
                 if intersects_box(np.array(triangle), np.array(center), voxel_size):
                     not_empty_voxels.append(voxel_centers[all_centers.index(center)])
                     break
+            if progress:
+
+                cur = (((all_centers.index(center)/all_centers.__len__())*100)//0.1)/10
+                if cur != old_cur:
+                    print(str(cur)+'%')
+                old_cur = cur
+
         return not_empty_voxels
 
     def find_fill_coord():
@@ -140,8 +149,9 @@ def crete_raw(filename, voxel_size, layers):
 
                         nbeam1 = beam1[::-1]
                         nbeam2 = beam2[::-1]
-                        match1 = re.search(r'0*1+0+[0-1]*1+0*', nbeam1)
-                        match2 = re.search(r'0*1+0+[0-1]*1+0*', nbeam2)
+                        match1 = re.search(r'2+1+0+[0-1-2]', nbeam1)
+                        # match1 = re.search(r'2+1+0+[0-1-2]*1+2+', nbeam1)
+                        match2 = re.search(r'2+1+0+[0-1-2]', nbeam2)
 
                         if match1:
                             first_1 = 0
@@ -155,6 +165,7 @@ def crete_raw(filename, voxel_size, layers):
                                     return fill_coords
 
                         elif match2:
+
                             first_1 = 0
                             for nchar in range(nbeam2.__len__()):
                                 char = nbeam2[nchar]
@@ -167,47 +178,53 @@ def crete_raw(filename, voxel_size, layers):
                         else:
                             pass
 
-    def fill(coord):
+    def fill(coord, old_color, new_color):
 
         stack = [coord]
         while stack:
             point = stack.pop()
-            if voxels[point[0]][point[1]][point[2]] == 0:
-                voxels[point[0]][point[1]][point[2]] = 1
+            if point[0] < x_length and point[1] < y_length and point[2] < z_length:
+                if voxels[point[0]][point[1]][point[2]] == old_color:
+                    voxels[point[0]][point[1]][point[2]] = new_color
 
-                ncoord1 = copy.deepcopy(point)
-                ncoord1[0] = ncoord1[0] - 1
-                if voxels[ncoord1[0]][ncoord1[1]][ncoord1[2]] == 0:
-                    stack.append(ncoord1)
+                    ncoord1 = copy.deepcopy(point)
+                    ncoord1[0] = ncoord1[0] - 1
+                    if ncoord1[0] >= 0:
+                        if voxels[ncoord1[0]][ncoord1[1]][ncoord1[2]] == old_color:
+                            stack.append(ncoord1)
 
-                ncoord2 = copy.deepcopy(point)
-                ncoord2[0] = ncoord2[0] + 1
-                if voxels[ncoord2[0]][ncoord2[1]][ncoord2[2]] == 0:
-                    stack.append(ncoord2)
+                    ncoord2 = copy.deepcopy(point)
+                    ncoord2[0] = ncoord2[0] + 1
+                    if ncoord2[0] < x_length:
+                        if voxels[ncoord2[0]][ncoord2[1]][ncoord2[2]] == old_color:
+                            stack.append(ncoord2)
 
-                ncoord3 = copy.deepcopy(point)
-                ncoord3[1] = ncoord3[1] - 1
-                if voxels[ncoord3[0]][ncoord3[1]][ncoord3[2]] == 0:
-                    stack.append(ncoord3)
+                    ncoord3 = copy.deepcopy(point)
+                    ncoord3[1] = ncoord3[1] - 1
+                    if ncoord3[1] >= 0:
+                        if voxels[ncoord3[0]][ncoord3[1]][ncoord3[2]] == old_color:
+                            stack.append(ncoord3)
 
-                ncoord4 = copy.deepcopy(point)
-                ncoord4[1] = ncoord4[1] + 1
-                if voxels[ncoord4[0]][ncoord4[1]][ncoord4[2]] == 0:
-                    stack.append(ncoord4)
+                    ncoord4 = copy.deepcopy(point)
+                    ncoord4[1] = ncoord4[1] + 1
+                    if ncoord4[1] < y_length:
+                        if voxels[ncoord4[0]][ncoord4[1]][ncoord4[2]] == old_color:
+                            stack.append(ncoord4)
 
-                ncoord5 = copy.deepcopy(point)
-                ncoord5[2] = ncoord5[2] - 1
-                if voxels[ncoord5[0]][ncoord5[1]][ncoord5[2]] == 0:
-                    stack.append(ncoord5)
+                    ncoord5 = copy.deepcopy(point)
+                    ncoord5[2] = ncoord5[2] - 1
+                    if ncoord5[2] >= 0:
+                        if voxels[ncoord5[0]][ncoord5[1]][ncoord5[2]] == old_color:
+                            stack.append(ncoord5)
 
-                ncoord6 = copy.deepcopy(point)
-                ncoord6[2] = ncoord6[2] + 1
-                if voxels[ncoord6[0]][ncoord6[1]][ncoord6[2]] == 0:
-                    stack.append(ncoord6)
+                    ncoord6 = copy.deepcopy(point)
+                    ncoord6[2] = ncoord6[2] + 1
+                    if ncoord6[2] < z_length:
+                        if voxels[ncoord6[0]][ncoord6[1]][ncoord6[2]] == old_color:
+                            stack.append(ncoord6)
 
 
         pass
-
 
     stl_mesh = mesh.Mesh.from_file('models/' + filename + '.stl')
     border_nodes = get_model_border()
@@ -233,9 +250,14 @@ def crete_raw(filename, voxel_size, layers):
         x, y, z = vox
         voxels[int(x)][int(y)][int(z)] = 1
 
-    fill_dot = find_fill_coord()
-    if fill_dot:
-        fill(fill_dot)
+    if fill_model:
+        fill([0, 0, 0], 0, 2)
+
+        fill_dot = find_fill_coord()
+        print(fill_dot)
+        if fill_dot:
+            fill(fill_dot, 0, 1)
+        fill([0, 0, 0], 2, 0)
 
     raw_list = []
     for z in range(z_length):
