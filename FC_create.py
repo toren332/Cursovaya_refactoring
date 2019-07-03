@@ -81,7 +81,11 @@ def create_fc(file_name):
             blocks.append(tmp)
 
     def create_elems():
+
         for i in range(block_qua):
+            elem_blocks.append((blocks[xxx[i]].ldf + 1)//((x_l+1)*(y_l+1)))
+
+
             elems_list.append(
                 [blocks[xxx[i]].ldf + 1, blocks[xxx[i]].rdf + 1, blocks[xxx[i]].rdb + 1, blocks[xxx[i]].ldb + 1,
                  blocks[xxx[i]].ltf + 1, blocks[xxx[i]].rtf + 1, blocks[xxx[i]].rtb + 1, blocks[xxx[i]].ltb + 1])
@@ -229,7 +233,7 @@ def create_fc(file_name):
                 "viscosity": False
             },
             "mesh": {
-                "elem_blocks": [1] * block_qua,
+                "elem_blocks": elem_blocks,
                 "elem_materials": [1] * block_qua,
                 "elem_properties": [-1] * block_qua,
                 "elem_types": [3] * block_qua,
@@ -242,6 +246,10 @@ def create_fc(file_name):
             }
 
         }
+        print(elems_list)
+        print(elems_list.__len__())
+        print(block_qua)
+
         output_file = open('models_output/' + file_name+".fc", "w")
         output_file.write(json.dumps(root, indent=4, sort_keys=True))
         output_file.close()
@@ -253,6 +261,7 @@ def create_fc(file_name):
     elems_list = []
     nids_arr0 = []
     nodes_arr = []
+    elem_blocks = []
     x_l, y_l, z_l, block_qua = get_list()
     create_uz()
     create_block()
