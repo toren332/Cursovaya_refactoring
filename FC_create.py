@@ -43,7 +43,7 @@ def create_fc(file_name):
                 params.append(int(string))
                 string = ''
 
-        input_file = open(file_name + '.raw', mode='r+b')
+        input_file = open('models_output/' + file_name + '.raw', mode='r+b')
         start_array = array('b')
         start_array.frombytes(input_file.read())
         _ = 0
@@ -242,7 +242,7 @@ def create_fc(file_name):
             }
 
         }
-        output_file = open(file_name+".fc", "w")
+        output_file = open('models_output/' + file_name+".fc", "w")
         output_file.write(json.dumps(root, indent=4, sort_keys=True))
         output_file.close()
 

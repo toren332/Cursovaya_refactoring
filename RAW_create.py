@@ -238,9 +238,9 @@ def crete_raw(filename, voxel_size, layers):
         fill(fill_dot)
 
     raw_list = []
-    for x in range(x_length):
+    for z in range(z_length):
         for y in range(y_length):
-            for z in range(z_length):
+            for x in range(x_length):
                 if layers != -1:
                     if z > layers - 1:
                         voxels[x][y][z] = 0
@@ -253,7 +253,7 @@ def crete_raw(filename, voxel_size, layers):
     ax = fig.gca(projection='3d')
     ax.voxels(voxels, edgecolor='k')
 
-    output_file = open(filename + '_' + str(x_length) + 'x' + str(y_length) + 'x' + str(z_length) + ".raw", "wb")
+    output_file = open('models_output/' + filename + '_' + str(x_length) + 'x' + str(y_length) + 'x' + str(z_length) + ".raw", "wb")
     new_array = array('b', raw_list)
     new_array.tofile(output_file)
     output_file.close()
