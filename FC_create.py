@@ -246,7 +246,6 @@ def create_fc(file_name):
             }
 
         }
-
         output_file = open('models_output/' + file_name+".fc", "w")
         output_file.write(json.dumps(root, indent=4, sort_keys=True))
         output_file.close()
