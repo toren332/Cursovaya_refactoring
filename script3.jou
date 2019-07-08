@@ -1,0 +1,84 @@
+#!python
+import cubit as preproc
+
+BLOCKS = max(preproc.get_block_id_list())
+FILE_WAY = "'C:/Users/Toren/Desktop/Cursovaya_refactoring/fc_tmp/FINAL.pvd"
+
+preproc.cmd("create mesh geometry hex all feature_angle 135.0")
+preproc.cmd("modify material 1 set property 'ISO_CONDUCTIVITY' value 40")
+
+
+SURFACES = preproc.get_surface_count()
+surfaces = []
+down_surfaces = []
+
+
+for i in range(1,SURFACES+1):
+    surface = preproc.surface(i)
+    surface_normal = surface.normal_at([0,0,0])
+    if surface_normal[2]!=0:
+        surfaces.append(i)
+     
+
+down_array = []
+for i in surfaces:
+    surface = preproc.surface(i)
+    down_array.append(surface.closest_point_trimmed([0,0,0])[2])
+down_min = min(down_array)
+
+tmp = 0
+for i in surfaces:
+    surface = preproc.surface(i)
+    layer = surface.closest_point_trimmed([0,0,0])[2]
+    step = layer- down_min
+    if surface.closest_point_trimmed([0,0,0])[2]==down_min:
+        down_surfaces.append(i)
+    else:
+        preproc.cmd("create temperature  on surface " + str(i) + "  value 150")
+        tmp+=1
+        preproc.cmd("bcdep temperature "+str(tmp)+" step "+str(step))
+
+
+for i in down_surfaces:
+    preproc.cmd("create temperature  on surface " + str(i) + "  value 20")
+    tmp+=1
+    preproc.cmd("bcdep temperature "+str(tmp)+" step all")
+    preproc.cmd("create displacement  on surface "+str(i)+"  dof all fix 0")
+
+
+
+preproc.cmd("create gravity global")
+preproc.cmd("modify gravity 1 dof 3 value -9.8")
+preproc.cmd("analysis type static heattrans elasticity dim3")
+preproc.cmd("static steps " + str(BLOCKS))
+print down_min
+for i in range(int(down_min),BLOCKS+1):
+    preproc.cmd("block " + str(i) + " step " + str(i) + " to " + str(BLOCKS))
+preproc.cmd("calculation start path "+ FILE_WAY )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

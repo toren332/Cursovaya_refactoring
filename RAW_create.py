@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import pickle
 
 
-def crete_raw(filename, voxel_size, layers, fill_model=True, progress=False, restore_voxels=False):
+def crete_raw(filename, voxel_size, layers, fill_model=True, progress=False):
     def get_model_border():
         """Возвращает максимумы и минимумы по осям, и массив треугольников"""
         triangles_array = []

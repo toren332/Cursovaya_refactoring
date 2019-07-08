@@ -4,8 +4,8 @@ from FC_create import create_fc
 import time
 start_time = time.time()
 
-filename = "RascheskaSimpl"
-voxel_size = 0.1
+filename = "Hor"
+voxel_size = 0.16
 layers = -1
 
 raw_filename = crete_raw(filename=filename, voxel_size=voxel_size, layers=layers, fill_model=True, progress=True)
